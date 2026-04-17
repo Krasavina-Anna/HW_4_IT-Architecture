@@ -13,27 +13,27 @@
 | **Message Enricher** | Антифрод-сервис | Добавление полей `fraud_status` / `fraud_reason` |
 
 ### Топики и потоки данных
-Producer (генератор)
-│
-▼
-transactions.raw ──► Антифрод (п.3.3)
-│
-├─► fraud.alerts
-├─► notifications
-└─► transactions.enriched
-│
-▼
-Content-Based Router (п.3.4)
-│
-┌────────────────────────┼────────────────────────┐
-▼ ▼ ▼
-crm.updates ledger.events notifications
-(покупки) (переводы) (платежи)
-│ │ │
-▼ ▼ ▼
-CRM-сервис Учётная система Сервис уведомлений
-(агрегация, (SQLite, п.3.6) (консоль, п.3.5)
-статусы, п.3.7)
+```mermaid
+flowchart TD
+    Producer[Producer<br/>генератор] -->|send| raw[(transactions.raw)]
+    
+    raw --> Fraud[Антифрод-сервис<br/>п.3.3]
+    
+    Fraud -->|подозрительная| fraudAlerts[(fraud.alerts)]
+    Fraud -->|подозрительная| notifications1[(notifications)]
+    Fraud -->|чистая| enriched[(transactions.enriched)]
+    
+    enriched --> Router[Content-Based Router<br/>п.3.4]
+    
+    Router -->|purchase| crm[(crm.updates)]
+    Router -->|transfer| ledger[(ledger.events)]
+    Router -->|payment| ledger
+    Router -->|payment| notifications2[(notifications)]
+    
+    crm --> CRM[CRM-сервис<br/>агрегация, статусы<br/>п.3.7]
+    ledger --> Ledger[Учётная система<br/>SQLite, п.3.6]
+    notifications1 --> Notify[Сервис уведомлений<br/>консоль, п.3.5]
+    notifications2 --> Notify
 
 
 ### Краткий поток одной транзакции
